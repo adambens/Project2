@@ -27,8 +27,10 @@ from bs4 import BeautifulSoup
 ## find_urls("the internet is awesome #worldwideweb") should return [], empty list
 
 def find_urls(s):
-    pass
-    #Your code here
+    regex = r"https?:\/\/[A-Za-z0-9]{2,}(?:\.+[A-Za-z0-9]{2,})+"
+    url = re.findall(regex, s)
+    return url
+    #pass
 
 
 
@@ -38,9 +40,24 @@ def find_urls(s):
 ## http://www.michigandaily.com/section/opinion
 
 def grab_headlines():
-    pass
-    #Your code here
 
+    f = open("opinion.html",  encoding="utf8")
+    text_from_file = f.read()
+    soup = BeautifulSoup(text_from_file, "lxml")
+
+
+    #url = 'https://www.michigandaily.com/section/opinion'
+    #html = requests.get(url)
+    #txt = html.text
+    #soup = BeautifulSoup(txt, 'lxml') 
+    headlines = []
+    tags = soup.ol
+
+    for tag in tags:
+        if tag.string != '\n':
+            headlines.append(tag.text) 
+    return headlines
+    #pass
 
 
 ## PART 3 (a) Define a function called get_umsi_data.  It should create a dictionary
@@ -55,15 +72,51 @@ def grab_headlines():
 ## requests.get(base_url, headers={'User-Agent': 'SI_CLASS'}) 
 
 def get_umsi_data():
-    pass
-    #Your code here
+
+    base_url = "https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All"
+    html = requests.get(base_url, headers={'User-Agent': 'SI_CLASS'})
+    soup = BeautifulSoup(html.text, 'html.parser')
+
+    namesDict = {}
+    dataList = []
+    page = 0
+    for page in range(13):
+        base_url = "https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All&page=" + str(page)
+        html = requests.get(base_url, headers={'User-Agent': 'SI_CLASS'})
+        soup = BeautifulSoup(html.text, 'html.parser')
+
+        data = soup.findAll("div", {"class" : "field-item even"})
+        for text in data:
+            if text.string != None:
+                dataList.append(text.string)
+
+        page += 1
+
+    name = 0
+    title = 1
+    count = 0
+    while count != (len(dataList)/2):
+        namesDict[dataList[name]] = dataList[title]
+        title +=2
+        name += 2
+        count += 1
+
+
+    return(namesDict)
+
 
 ## PART 3 (b) Define a function called num_students.  
 ## INPUT: The dictionary from get_umsi_data().
 ## OUTPUT: Return number of PhD students in the data.  (Don't forget, I may change the input data)
 def num_students(data):
-    pass
-    #Your code here
+    phd_students = 0
+    for student in data.values():
+        if student == 'PhD student':
+            phd_students += 1
+    return phd_students
+
+
+    
 
 
 
